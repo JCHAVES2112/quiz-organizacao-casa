@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Questionário de Mapeamento de Desafios na Organização da Casa</title>
+  <style>
+      body {
+          font-family: Arial, sans-serif;
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 20px;
+          line-height: 1.6;
+      }
+      .quiz-container {
+          border: 6px double #000;
+          padding: 20px;
+          border-radius: 10px;
+      }
+      h1 {
+          text-align: center;
+          color: #333;
+      }
+      .question {
+          margin-bottom: 20px;
+      }
+      .question-number {
+          background-color: #65DB4D;
+          color: white;
+          padding: 5px 10px;
+          border-radius: 5px;
+          margin-right: 10px;
+      }
+      .answer {
+          cursor: pointer;
+          padding: 10px;
+          margin: 5px 0;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+      }
+      .answer:hover {
+          background-color: #f0f0f0;
+      }
+      .answer.selected {
+          background-color: #2970FF;
+          color: white;
+      }
+      #resultButton, #restartButton {
+          display: block;
+          width: 100%;
+          padding: 10px;
+          background-color: #65DB4D;
+          border: none;
+          color: white;
+          font-size: 16px;
+          cursor: pointer;
+          margin-top: 20px;
+      }
+      #resultContainer {
+          margin-top: 20px;
+          text-align: center;
+      }
+      #chartContainer {
+          max-width: 600px;
+          margin: 20px auto;
+      }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+      <h1>Questionário de Mapeamento de Desafios na Organização da Casa</h1>
+      <p><strong>Por: Paula Chaves</strong></p>
+      <p>Instruções: Responda com sinceridade cada pergunta. Ao final, seu perfil será revelado junto com orientações para aprimorar sua organização.</p>
+
+      <div id="quizQuestions"></div>
+
+      <button id="resultButton">Gerar Resultado</button>
+
+      <div id="resultContainer" style="display:none;">
+          <h2>Resultado</h2>
+          <div id="chartContainer">
+              <canvas id="resultChart"></canvas>
+          </div>
+          <div id="recommendation"></div>
+          <button id="restartButton">Refazer Teste</button>
+      </div>
+  </div>
+
+  <script>
+      const questions = [
+          {
+              text: "Como você se sente ao entrar na sua casa?",
+              answers: [
+                  "(A) Em paz e confortável.",
+                  "(B) Indiferente, é apenas um lugar.",
+                  "(C) Ansioso(a) ou sobrecarregado(a)."
+              ]
+          },
+          {
+              text: "Com que frequência você perde objetos no dia a dia?",
+              answers: [
+                  "(A) Raramente ou nunca.",
+                  "(B) Algumas vezes por semana.",
+                  "(C) Quase todos os dias."
+              ]
+          },
+          {
+              text: "Como está a sua rotina de limpeza e manutenção da casa?",
+              answers: [
+                  "(A) Tenho um cronograma e consigo segui-lo.",
+                  "(B) Faço quando dá tempo, sem um planejamento.",
+                  "(C) Acabo adiando e me sinto sobrecarregado(a)."
+              ]
+          },
+          {
+              text: "Qual é o seu maior desafio com a organização?",
+              answers: [
+                  "(A) Nenhum em especial, gosto de organizar.",
+                  "(B) Falta de tempo ou energia.",
+                  "(C) Acumulo coisas e tenho dificuldade de desapegar."
+              ]
+          },
+          {
+              text: "Você sente que sua casa impacta seu bem-estar mental?",
+              answers: [
+                  "(A) Positivamente, me sinto bem.",
+                  "(B) Neutro, não percebo impacto.",
+                  "(C) Negativamente, sinto estresse e desorganização."
+              ]
+          },
+          {
+              text: "Como você lida com objetos que não usa mais?",
+              answers: [
+                  "(A) Descarto ou doo regularmente.",
+                  "(B) Guardo, pois acho que posso precisar um dia.",
+                  "(C) Tenho dificuldade de me desfazer de qualquer coisa."
+              ]
+          },
+          {
+              text: "Você tem espaços na casa que são constantemente bagunçados?",
+              answers: [
+                  "(A) Não, consigo manter tudo sob controle.",
+                  "(B) Sim, alguns cômodos específicos.",
+                  "(C) Sim, a casa toda parece estar sempre desorganizada."
+              ]
+          },
+          {
+              text: "Com que frequência você faz revisões e organização geral dos seus itens?",
+              answers: [
+                  "(A) Regularmente, pelo menos uma vez ao mês.",
+                  "(B) Quando percebo que preciso.",
+                  "(C) Quase nunca."
+              ]
+          },
+          {
+              text: "Sua rotina de organização é compatível com seu estilo de vida?",
+              answers: [
+                  "(A) Sim, encaixa bem no meu dia a dia.",
+                  "(B) Mais ou menos, preciso melhorar a disciplina.",
+                  "(C) Não, sempre deixo para depois."
+              ]
+          },
+          {
+              text: "Como sua família ou outras pessoas na casa lidam com a organização?",
+              answers: [
+                  "(A) Todos ajudam e seguem um sistema.",
+                  "(B) Algumas pessoas ajudam, outras bagunçam.",
+                  "(C) Ninguém ajuda e me sinto sobrecarregado(a)."
+              ]
+          },
+          {
+              text: "Como você se sente quando tenta organizar um espaço?",
+              answers: [
+                  "(A) Motivado(a) e satisfeito(a) com o resultado.",
+                  "(B) Neutro, é apenas uma tarefa.",
+                  "(C) Frustrado(a) ou sem saber por onde começar."
+              ]
+          },
+          {
+              text: "Qual sua relação com compras e aquisição de novos objetos?",
+              answers: [
+                  "(A) Compro apenas o necessário.",
+                  "(B) Faço compras por impulso ocasionalmente.",
+                  "(C) Compro com frequência e tenho dificuldade de controlar."
+              ]
+          },
+          {
+              text: "Como você descreveria a distribuição dos espaços e funções na sua casa?",
+              answers: [
+                  "(A) Funcional e bem planejada.",
+                  "(B) Confusa, mas utilizável.",
+                  "(C) Desorganizada e pouco prática."
+              ]
+          },
+          {
+              text: "Como você lida com papéis, documentos e correspondências?",
+              answers: [
+                  "(A) Tenho um sistema organizado para arquivar.",
+                  "(B) Guardo tudo junto, mas consigo encontrar quando preciso.",
+                  "(C) Empilho sem ordem e perco documentos importantes."
+              ]
+          },
+          {
+              text: "Qual dessas frases melhor define sua relação com a casa?",
+              answers: [
+                  "(A) Minha casa é meu refúgio e me sinto bem nela.",
+                  "(B) É um espaço que eu uso, mas não penso muito sobre.",
+                  "(C) Minha casa me sobrecarrega e não sei por onde começar."
+              ]
+          }
+      ];
+
+      const recommendations = {
+          A: "Organizado(a) Estratégico(a): Você já tem um bom controle sobre sua organização, mas pode refinar processos e tornar tudo ainda mais eficiente. Sugestão: implemente revisões periódicas e otimize espaços para melhorar a funcionalidade da casa.",
+          B: "Desorganização Funcional: Sua casa funciona, mas pode ser mais eficiente. Você precisa ajustar hábitos e criar rotinas para evitar bagunça acumulada. Sugestão: estabeleça pequenos hábitos diários de manutenção e crie um sistema de desapego regular.",
+          C: "Sobrecarregado(a) e Perdido(a): Você sente que a desorganização afeta seu bem-estar e produtividade. Sugestão: comece com pequenas mudanças, organizando um espaço por vez. Priorize desapego e crie rotinas simples para manter a ordem."
+      };
+
+      function renderQuiz() {
+          const container = document.getElementById('quizQuestions');
+          questions.forEach((q, index) => {
+              const questionDiv = document.createElement('div');
+              questionDiv.className = 'question';
+              
+              const numberSpan = document.createElement('span');
+              numberSpan.className = 'question-number';
+              numberSpan.textContent = index + 1;
+              
+              const questionText = document.createElement('span');
+              questionText.textContent = q.text;
+              
+              questionDiv.appendChild(numberSpan);
+              questionDiv.appendChild(questionText);
+              
+              q.answers.forEach((answer, ansIndex) => {
+                  const answerDiv = document.createElement('div');
+                  answerDiv.className = 'answer';
+                  answerDiv.textContent = answer;
+                  answerDiv.dataset.questionIndex = index;
+                  answerDiv.dataset.answerIndex = ansIndex;
+                  
+                  answerDiv.addEventListener('click', function() {
+                      const questionAnswers = document.querySelectorAll(`.answer[data-question-index="${index}"]`);
+                      questionAnswers.forEach(a => a.classList.remove('selected'));
+                      this.classList.add('selected');
+                  });
+                  
+                  questionDiv.appendChild(answerDiv);
+              });
+              
+              container.appendChild(questionDiv);
+          });
+      }
+
+      document.getElementById('resultButton').addEventListener('click', calculateResult);
+      document.getElementById('restartButton').addEventListener('click', restartQuiz);
+
+      function calculateResult() {
+          const selectedAnswers = document.querySelectorAll('.answer.selected');
+          if (selectedAnswers.length !== questions.length) {
+              alert('Por favor, responda todas as perguntas.');
+              return;
+          }
+
+          const counts = { A: 0, B: 0, C: 0 };
+          selectedAnswers.forEach(answer => {
+              const letter = answer.textContent.charAt(1);
+              counts[letter]++;
+          });
+
+          const maxCount = Math.max(counts.A, counts.B, counts.C);
+          const resultLetter = Object.keys(counts).find(key => counts[key] === maxCount);
+
+          document.getElementById('quizQuestions').style.display = 'none';
+          document.getElementById('resultButton').style.display = 'none';
+          document.getElementById('resultContainer').style.display = 'block';
+
+          document.getElementById('recommendation').textContent = recommendations[resultLetter];
+          drawChart(counts);
+      }
+
+      function drawChart(counts) {
+          const ctx = document.createElement('canvas');
+          document.getElementById('chartContainer').innerHTML = '';
+          document.getElementById('chartContainer').appendChild(ctx);
+
+          const colors = ['#FFC000', '#8ED973', '#44B3E1'];
+          const labels = ['Resposta A', 'Resposta B', 'Resposta C'];
+          const data = [counts.A, counts.B, counts.C];
+
+          new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      data: data,
+                      backgroundColor: colors
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  plugins: {
+                      legend: { display: false }
+                  }
+              }
+          });
+      }
+
+      function restartQuiz() {
+          document.getElementById('quizQuestions').innerHTML = '';
+          document.getElementById('resultContainer').style.display = 'none';
+          document.getElementById('resultButton').style.display = 'block';
+          renderQuiz();
+      }
+
+      // Carregar Chart.js via CDN
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+      script.onload = renderQuiz;
+      document.head.appendChild(script);
+  </script>
+</body>
+</html>
